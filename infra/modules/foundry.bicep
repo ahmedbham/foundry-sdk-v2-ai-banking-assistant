@@ -54,4 +54,4 @@ resource foundry 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
   }
 }
 
-output projectEndpoint string = 'https://${foundry.properties.endpoint}/'
+output projectEndpoint string = foundry.properties.endpoint
