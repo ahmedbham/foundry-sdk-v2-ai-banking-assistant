@@ -1,0 +1,25 @@
+name: foundry-sdk-v2-ai-banking-assistant
+metadata:
+  template: foundry-sdk-v2-ai-banking-assistant
+services:
+  backend:
+    project: ./backend
+    host: containerapp
+    language: python
+    docker:
+      remoteBuild: true
+  middle-tier:
+    project: ./middle-tier
+    host: containerapp
+    language: python
+    docker:
+      remoteBuild: true
+  frontend:
+    project: ./frontend
+    host: containerapp
+    language: js
+    docker:
+      remoteBuild: true
+infra:
+  provider: bicep
+  path: ./infra
