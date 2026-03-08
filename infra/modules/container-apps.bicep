@@ -16,6 +16,9 @@ param acrLoginServer string
 @description('ACR name')
 param acrName string
 
+@description('Foundry account name for role assignment')
+param foundryAccountName string
+
 var abbrs = loadJsonContent('../abbreviations.json')
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
@@ -96,6 +99,9 @@ resource middleTier 'Microsoft.App/containerApps@2024-03-01' = {
   name: '${abbrs.containerApps}middle-${environmentName}'
   location: location
   tags: union(tags, { 'azd-service-name': 'middle-tier' })
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
@@ -138,6 +144,10 @@ resource middleTier 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'BACKEND_URL'
               value: 'https://${backend.properties.configuration.ingress.fqdn}'
+            }
+            {
+              name: 'MCP_SERVER_URL'
+              value: 'https://${backend.properties.configuration.ingress.fqdn}/mcp/mcp'
             }
           ]
         }
@@ -203,3 +213,18 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
 output backendFqdn string = backend.properties.configuration.ingress.fqdn
 output middleTierFqdn string = middleTier.properties.configuration.ingress.fqdn
 output frontendFqdn string = frontend.properties.configuration.ingress.fqdn
+
+// Role assignment: Cognitive Services OpenAI User for middle-tier on Foundry account
+resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' existing = {
+  name: foundryAccountName
+}
+
+resource middleTierCognitiveServicesRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(middleTier.id, foundryAccount.id, '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+  scope: foundryAccount
+  properties: {
+    principalId: middleTier.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+  }
+}

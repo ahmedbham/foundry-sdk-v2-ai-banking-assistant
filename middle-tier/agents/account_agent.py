@@ -1,10 +1,11 @@
-import asyncio
-import os
+from azure.identity.aio import DefaultAzureCredential
+from agent_framework import Agent, MCPStreamableHTTPTool
+from agent_framework.azure import AzureOpenAIChatClient
 
-from azure.identity import DefaultAzureCredential
-from agent_framework import AzureAIAgentClient
-
-from config import get_config
+try:
+    from config import get_config
+except ImportError:
+    from middle_tier.config import get_config
 
 ACCOUNT_AGENT_INSTRUCTIONS = """You are a banking account assistant. You help users with:
 - Viewing their account information (name, account number, account type)
@@ -16,22 +17,26 @@ When calling tools, use the user_id provided in the conversation context.
 Present financial information clearly and concisely."""
 
 
-async def create_account_agent():
+def create_account_agent() -> Agent:
     config = get_config()
     credential = DefaultAzureCredential()
 
-    client = AzureAIAgentClient(
-        project_endpoint=config["project_endpoint"],
-        model_deployment_name=config["model_deployment_name"],
+    client = AzureOpenAIChatClient(
+        endpoint=config["project_endpoint"],
+        deployment_name=config["model_deployment_name"],
         credential=credential,
     )
 
-    return client
+    mcp_tool = MCPStreamableHTTPTool(
+        name="banking-mcp",
+        url=config["mcp_server_url"],
+    )
 
+    agent = Agent(
+        client=client,
+        instructions=ACCOUNT_AGENT_INSTRUCTIONS,
+        name="AccountAgent",
+        tools=[mcp_tool],
+    )
 
-if __name__ == "__main__":
-    async def main():
-        client = await create_account_agent()
-        print(f"Account agent client created: {client}")
-
-    asyncio.run(main())
+    return agent

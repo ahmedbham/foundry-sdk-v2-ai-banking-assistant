@@ -59,6 +59,7 @@ module containerApps './modules/container-apps.bicep' = {
     projectEndpoint: foundry.outputs.projectEndpoint
     acrLoginServer: acr.outputs.loginServer
     acrName: acr.outputs.name
+    foundryAccountName: actualFoundryAccountName
   }
 }
 
