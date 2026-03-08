@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+
+  middle-tier:
+    build: ./middle-tier
+    ports:
+      - "8001:8001"
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - PROJECT_ENDPOINT=${PROJECT_ENDPOINT:-}
+      - MODEL_DEPLOYMENT_NAME=${MODEL_DEPLOYMENT_NAME:-agent-model}
+    depends_on:
+      - backend
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - middle-tier
