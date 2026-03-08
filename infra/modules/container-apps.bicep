@@ -121,6 +121,8 @@ resource middleTier 'Microsoft.App/containerApps@2024-03-01' = {
       ingress: {
         external: false
         targetPort: 8001
+        allowInsecure: true
+        transport: 'http'
       }
     }
     template: {
@@ -196,8 +198,8 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
           }
           env: [
             {
-              name: 'VITE_CHAT_API_URL'
-              value: 'https://${middleTier.properties.configuration.ingress.fqdn}'
+              name: 'MIDDLE_TIER_HOST'
+              value: '${middleTier.properties.configuration.ingress.fqdn}'
             }
           ]
         }

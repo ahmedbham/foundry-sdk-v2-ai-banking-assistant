@@ -40,7 +40,7 @@ resource foundry 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
   resource model 'deployments' = {
     name: 'agent-model'
     sku: {
-      capacity: 1
+      capacity: 10
       name: 'GlobalStandard'
     }
     properties: {

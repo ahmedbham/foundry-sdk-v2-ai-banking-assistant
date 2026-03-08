@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from agents.account_agent import create_account_agent
+from agents.supervisor_agent import create_supervisor_agent
 
 app = FastAPI(title="Banking Assistant Middle Tier")
 
@@ -13,7 +13,7 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    agent = create_account_agent()
+    agent = create_supervisor_agent()
     prompt = f"[User ID: {request.user_id}] {request.message}"
     response = await agent.run(prompt)
     return {"response": response.text}
